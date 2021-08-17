@@ -7,7 +7,7 @@ for (i in 1:72) {
   path <- paste0("~/Downloads/BaseOutput/Analysis_", i, "/plpResult/performanceEvaluation.rds")
   tryCatch(
     {
-      base[i] <- as.numeric(data.frame(readRDS(path)$evaluationStatistics)["AUC.auc", "Value"])
+      base[i] <- as.numeric(data.frame(readRDS(path)$evaluationStatistics)["AUC.auc.1", "Value"])
     }, error=function(cond) {
     }
   )
@@ -31,6 +31,50 @@ for (i in 1:72) {
     }
   )
 }
+
+#############################
+# load validation IPCI
+base_ipci <- rep(NA, 72)
+ema_ipci <- rep(NA, 72)
+
+for (i in 1:72) {
+  path <- paste0("~/Downloads/BaseOutput/Validation/IPCI/Analysis_", i, "/validationResult.rds")
+  tryCatch(
+    {
+      base_ipci[i] <- as.numeric(data.frame(readRDS(path)$performanceEvaluation$evaluationStatistics)["AUC.auc", "Value"])
+    }, error=function(cond) {
+    }
+  )
+}
+
+for (i in 1:length(base_ipci)) {
+  if(base_ipci[i] < 0.5 & !is.na(base_ipci[i])) {
+    base_ipci[i] <- NA
+  }
+}
+
+data_mat_base_ipci <- matrix(base_ipci,
+                             ncol = 3, 
+                             byrow = TRUE)
+data_mat_ema_ipci <- matrix(ema_ipci,
+                             ncol = 3, 
+                             byrow = TRUE)
+
+full_val_data <- matrix(, nrow = 48, ncol = 3)
+
+j <- 1
+k <- 1
+for (i in seq(1, 48, 1)) { # 72 iterations
+  if(i %% 2 == 0) {
+    full_val_data[i,] <- data_mat_ema_ipci[j,]
+    j = j+1
+  } else if (i %% 2 == 1){
+    full_val_data[i,] <- data_mat_base_ipci[k,]
+    k = k+1
+  }
+}
+
+#############################
 
 data_mat_ema <- matrix(ema,
                        ncol = 3, 
@@ -61,7 +105,7 @@ outcome_base <- paste0(outcome, " ", c(rep("30 BAS", 8),
                                        rep("60 BAS", 8),
                                        rep("90 BAS", 8)))
 # removed outcome here for visibility
-blank_vec <- rep(" ", 24)
+# blank_vec <- rep(" ", 24)
 outcome_ema <- paste0(outcome, " ", c(rep("30 EMA", 8),
                                       rep("60 EMA", 8),
                                       rep("90 EMA", 8)))
@@ -107,11 +151,11 @@ p <- heatmaply::heatmaply(full_data,
           labRow = ref_data,
           heatmap_layers = theme(axis.line=element_blank()))
 
-q <- heatmaply::heatmaply(full_data,
+s <- heatmaply::heatmaply(full_val_data,
                           dendrogram = "none",
                           ylab = "Outcome and setting",
                           xlab = "Target", 
-                          main = "CPRD Aurum (asdfasdf)",
+                          main = "CPRD Aurum (internal)                             IPCI (external)",
                           # title = "test",
                           # cellnote = TRUE,
                           draw_cellnote = TRUE,
@@ -135,8 +179,9 @@ q <- heatmaply::heatmaply(full_data,
                           showticklabels = c(TRUE, FALSE),
                           heatmap_layers = theme(axis.line=element_blank()))
 
-r <- subplot(p, q, margin = .1, titleX = TRUE, titleY = TRUE)
-r$width <- 700
+
+r <- subplot(p, s, margin = .05, titleX = TRUE, titleY = FALSE)
+r$width <- 900
 r$height <- 1500
 
 export(r, file = "scaled_iris.png")
