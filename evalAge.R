@@ -64,7 +64,7 @@ base_eavg <- data.frame(eavg=numeric(0),
 
 for (i in 1:72) {
   if(i %% 3 == 1) {
-    path <- paste0("~/Downloads/BaseOutput/Analysis_", i, "/plpResult")
+    path <- paste0("~/Downloads/EMAoutput/Analysis_", i, "/plpResult")
     auc_row <- data.frame(auc=0,
                       auc_0_64=0,
                       auc_65_150=0)
@@ -91,7 +91,7 @@ base_auc_mat[base_auc_mat < 0.5] <- 0.5
 
 base_eavg_mat[base_eavg_mat == 0] <- NA
 
-ref_base <- read.csv("~/Downloads/BaseOutput/settings.csv")
+ref_base <- read.csv("~/Downloads/EMAoutput/settings.csv")
 ref_base <- ref_base[order(ref_base$analysisId), ]
 
 outcome <- ref_base$outcomeName[seq(1, nrow(ref_base), 3)]
@@ -102,7 +102,7 @@ p <- heatmaply::heatmaply(base_auc_mat,
                           dendrogram = "none",
                           ylab = "Outcome and setting",
                           xlab = "Target", 
-                          main = "CPRD Aurum (internal) - Discrimination [AUROC]",
+                          main = " ",
                           # cellnote = TRUE,
                           draw_cellnote = TRUE,
                           digits = 2L,
@@ -114,6 +114,7 @@ p <- heatmaply::heatmaply(base_auc_mat,
                           grid_color = "white",
                           grid_width = 0.00002,
                           titleX = TRUE,
+                          titleY = TRUE,
                           hide_colorbar = FALSE,
                           branches_lwd = NULL,
                           label_names = c("Outcome", "Target:", "AUROC"),
@@ -122,15 +123,16 @@ p <- heatmaply::heatmaply(base_auc_mat,
                           labCol = c("All ages", "Age <65", "Age >=65"),
                           column_text_angle = 0,
                           labRow = outcome_base,
+                          key.title = "AUROC",
                           heatmap_layers = theme(axis.line=element_blank()))
 
 q <- heatmaply::heatmaply(base_eavg_mat,
                           dendrogram = "none",
                           ylab = "Outcome and setting",
                           xlab = "Target", 
-                          main = "CPRD Aurum (internal) - Calibration [Eavg]",
+                          main = " ",
                           # cellnote = TRUE,
-                          colors = viridis(n = 256,  option = "plasma"),
+                          colors = viridis(n = 256,  option = "magma", direction = -1),
                           draw_cellnote = TRUE,
                           digits = 5L,
                           cellnote_textposition = "middle center",
@@ -149,16 +151,27 @@ q <- heatmaply::heatmaply(base_eavg_mat,
                           labCol = c("All ages", "Age <65", "Age >=65"),
                           column_text_angle = 0,
                           labRow = outcome_base,
+                          showticklabels = c(TRUE, TRUE),
+                          titleY = TRUE,
+                          key.title = "E<sub>avg</sub>",
                           heatmap_layers = theme(axis.line=element_blank()))
 
 p$width <- 500
-p$height <- 900
+p$height <- 700
 
 q$width <- 500
-q$height <- 900
+q$height <- 700
+
+# r <- subplot(p, q, margin = .05, titleX = TRUE, titleY = TRUE)
+# r <- r %>% layout(annotations = list(
+#   list(x = 0.15 , y = 1.05, text = "AUROC", showarrow = F, xref='paper', yref='paper'),
+#   list(x = 0.82 , y = 1.05, text = "Eavg", showarrow = F, xref='paper', yref='paper'))
+# )
+# print(r)
+
+print(q)
+print(p)
 
 export(p, file = "base_models_auc.png")
 export(q, file = "base_models_eavg.png")
 
-print(q)
-print(p)
