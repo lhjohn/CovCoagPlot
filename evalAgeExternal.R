@@ -2,20 +2,25 @@ library(magrittr)
 options(scipen=999)
 library(heatmaply)
 
-get_auc <- function(path){
-  plpResult <- PatientLevelPrediction::loadPlpResult(path)
-  prediction <- plpResult$prediction
-  evaluationStatistics <- plpResult$performanceEvaluation$evaluationStatistics
+get_auc_val <- function(path){
+  # plpResult <- PatientLevelPrediction::loadPlpResult(path)
+  # prediction <- plpResult$prediction
+  valResults <- readRDS(path)
+  prediction <- valResults$prediction
+  # replace value column with recalibrated column, i nthis case recal in the large
+  prediction$value <- prediction$recalibrationInTheLargeValue
+  
+  evaluationStatistics <- valResults$performanceEvaluation$evaluationStatistics
   
   auc_test <- data.frame(evaluationStatistics) %>%
-    dplyr::filter(Eval == "test", Metric == "AUC.auc") %>%
+    dplyr::filter(Eval == "recalibrationInTheLarge", Metric == "AUC.auc") %>%
     dplyr::select(Value) %>%
     as.numeric()
   
   pred_0_64 <- prediction %>%
-    dplyr::filter(ageYear >=0, ageYear <= 64, indexes == -1)
+    dplyr::filter(ageYear >=0, ageYear <= 64)
   pred_65_150 <- prediction %>%
-    dplyr::filter(ageYear >=65, ageYear <= 150, indexes == -1)
+    dplyr::filter(ageYear >=65, ageYear <= 150)
   
   pred_0_64_eval <- PatientLevelPrediction::evaluatePlp(pred_0_64)
   auc_0_64 <- pred_0_64_eval$evaluationStatistics$AUC$auc
@@ -28,20 +33,24 @@ get_auc <- function(path){
   return(result)
 }
 
-get_eavg <- function(path){
-  plpResult <- PatientLevelPrediction::loadPlpResult(path)
-  prediction <- plpResult$prediction
-  evaluationStatistics <- plpResult$performanceEvaluation$evaluationStatistics
+get_eavg_val <- function(path){
+  # plpResult <- PatientLevelPrediction::loadPlpResult(path)
+  valResults <- readRDS(path)
+  prediction <- valResults$prediction
+  # replace value column with recalibrated column, i nthis case recal in the large
+  prediction$value <- prediction$recalibrationInTheLargeValue
+  
+  evaluationStatistics <- valResults$performanceEvaluation$evaluationStatistics
   
   eavg_test <- data.frame(evaluationStatistics) %>%
-    dplyr::filter(Eval == "test", Metric == "Emean.Eavg") %>%
+    dplyr::filter(Eval == "recalibrationInTheLarge", Metric == "Emean.Eavg") %>%
     dplyr::select(Value) %>%
     as.numeric()
   
   pred_0_64 <- prediction %>%
-    dplyr::filter(ageYear >=0, ageYear <= 64, indexes == -1)
+    dplyr::filter(ageYear >=0, ageYear <= 64)
   pred_65_150 <- prediction %>%
-    dplyr::filter(ageYear >=65, ageYear <= 150, indexes == -1)
+    dplyr::filter(ageYear >=65, ageYear <= 150)
   
   pred_0_64_eval <- PatientLevelPrediction::evaluatePlp(pred_0_64)
   eavg_0_64 <- pred_0_64_eval$evaluationStatistics$Emean
@@ -53,8 +62,6 @@ get_eavg <- function(path){
   
   return(result)
 }
-# path <- "~/Downloads/BaseOutput/Analysis_1/plpResult"
-# test <- auc("~/Downloads/BaseOutput/Analysis_1/plpResult")
 
 base_auc <- data.frame(auc=numeric(0),
                        auc_0_64=numeric(0),
@@ -67,7 +74,9 @@ for (i in 1:24) {
   # in case only every nth analysis needs to be loaded, not relevant anymore
   # therefore set to 1 == 0
   if(i %% 1 == 0) {
-    path <- paste0("~/Downloads/BaseOutput_25p/Analysis_", i, "/plpResult")
+    # path <- paste0("~/Data/Coagulopathy/IPCI/ValidationEma/IPCI/Analysis_", i, "/validationResult.rds")
+    path <- paste0("~/Data/Coagulopathy/SIDIAP/ValidationEma/Analysis_", i, "/validationResult.rds")
+    
     auc_row <- data.frame(auc=0,
                           auc_0_64=0,
                           auc_65_150=0)
@@ -76,8 +85,8 @@ for (i in 1:24) {
                            eavg_65_150=0)
     tryCatch(
       {
-        auc_row <- get_auc(path)
-        eavg_row <- get_eavg(path)
+        auc_row <- get_auc_val(path)
+        eavg_row <- get_eavg_val(path)
       }, error=function(cond) {
       }
     )
@@ -94,7 +103,7 @@ base_auc_mat[base_auc_mat < 0.5] <- 0.5
 
 base_eavg_mat[base_eavg_mat == 0] <- NA
 
-ref_base <- read.csv("~/Downloads/BaseOutput_25p/settings.csv")
+ref_base <- read.csv("~/Data/Coagulopathy/CPRD Aurum/EmaOutput_25p/settings.csv")
 ref_base <- ref_base[order(ref_base$analysisId), ]
 
 # outcome <- ref_base$outcomeName[seq(1, nrow(ref_base), 3)]
@@ -207,6 +216,6 @@ q$height <- 475
 print(q)
 print(p)
 
-export(p, file = "base25_models_auc.png")
-export(q, file = "base25_models_eavg.png")
+export(p, file = "./output/ema25_models_sidiap_recal_auc.png")
+export(q, file = "./output/ema25_models_sidiap_recal_eavg.png")
 

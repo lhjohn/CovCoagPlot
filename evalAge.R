@@ -53,8 +53,6 @@ get_eavg <- function(path){
   
   return(result)
 }
-# path <- "~/Downloads/BaseOutput/Analysis_1/plpResult"
-# test <- auc("~/Downloads/BaseOutput/Analysis_1/plpResult")
 
 base_auc <- data.frame(auc=numeric(0),
                    auc_0_64=numeric(0),
@@ -67,7 +65,7 @@ for (i in 1:24) {
   # in case only every nth analysis needs to be loaded, not relevant anymore
   # therefore set to 1 == 0
   if(i %% 1 == 0) {
-    path <- paste0("~/Downloads/BaseOutput_25p/Analysis_", i, "/plpResult")
+    path <- paste0("~/Data/Coagulopathy/CPRD Aurum/BaseOutput_25p/Analysis_", i, "/plpResult")
     auc_row <- data.frame(auc=0,
                       auc_0_64=0,
                       auc_65_150=0)
@@ -94,7 +92,7 @@ base_auc_mat[base_auc_mat < 0.5] <- 0.5
 
 base_eavg_mat[base_eavg_mat == 0] <- NA
 
-ref_base <- read.csv("~/Downloads/BaseOutput_25p/settings.csv")
+ref_base <- read.csv("~/Data/Coagulopathy/CPRD Aurum/BaseOutput_25p/settings.csv")
 ref_base <- ref_base[order(ref_base$analysisId), ]
 
 # outcome <- ref_base$outcomeName[seq(1, nrow(ref_base), 3)]
