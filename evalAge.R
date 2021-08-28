@@ -82,7 +82,7 @@ for (i in 1:24) {
   # in case only every nth analysis needs to be loaded, not relevant anymore
   # therefore set to 1 == 0
   if(i %% 1 == 0) {
-    path <- paste0("~/Data/Coagulopathy/CPRD Aurum/BaseOutput_25p/Analysis_", i, "/plpResult")
+    path <- paste0("~/Data/Coagulopathy/CPRD Aurum/BaseOutput_25p_test/Analysis_", i, "/plpResult")
     auc_row <- data.frame(auc=0,
                       auc_0_64=0,
                       auc_65_150=0,
@@ -108,7 +108,7 @@ for (i in 1:24) {
   # in case only every nth analysis needs to be loaded, not relevant anymore
   # therefore set to 1 == 0
   if(i %% 1 == 0) {
-    path <- paste0("~/Data/Coagulopathy/CPRD Aurum/EmaOutput_25p/Analysis_", i, "/plpResult")
+    path <- paste0("~/Data/Coagulopathy/CPRD Aurum/EmaOutput_25p_test/Analysis_", i, "/plpResult")
     auc_row <- data.frame(auc=0,
                           auc_0_64=0,
                           auc_65_150=0,
@@ -421,8 +421,10 @@ eavg_plots$height <- 225
 print(auc_plots)
 print(eavg_plots)
 # 
-export(auc_plots, file = "./output/cprd_models_auc.png")
+export(auc_plots, file = "./output/cprd_models_auc.png", scale =2)
 export(eavg_plots, file = "./output/cprd_models_eavg.png")
+
+# orca(auc_plots, file = "./output/cprd_models_auc.png", scale = 1)
 
 # export(q, file = "base25_models_eavg.png")
 
