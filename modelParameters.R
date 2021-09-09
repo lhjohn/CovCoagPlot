@@ -78,7 +78,7 @@ plotHeat <- function(risk, yTick, yLab = F, xLab = F) {
                        # cellnote_textposition = "middle center",
                        scale = "none",
                        na.value = "grey50",
-                       limits = c(0.0, 0.009),
+                       # limits = c(0.0, 0.005),
                        # margins = c(60,100,NA,NA),
                        # grid_color = "white",
                        # grid_width = 0.00002,
@@ -104,6 +104,9 @@ plotHeat <- function(risk, yTick, yLab = F, xLab = F) {
   )
 }
 
+width <- 500
+height <- 800
+
 MI <- plotHeat(risk1, yTick = T, yLab = T)
 MIIS <- plotHeat(risk3, yTick = F)
 PE <- plotHeat(risk4, yTick = F, xLab =T)
@@ -124,4 +127,31 @@ plot$height <- 800
 print(plot)
 
 export(plot, file = "./output/base_risk_pred.png")
+
+#############
+MI <- plotHeat(risk1, yTick = T, yLab = T)
+MIIS <- plotHeat(risk3, yTick = T, yLab = T)
+PE <- plotHeat(risk4, yTick = T, xLab =T)
+DVT <- plotHeat(risk5, yTick = T, yLab = T)
+VTE <- plotHeat(risk6, yTick = T, yLab = T)
+
+MIIS$width <- 500
+MIIS$height <- 800
+MIIS <- MIIS  %>%
+  layout(
+    annotations = list(
+      list(x = 0.15 , y = 1.05, text = "MI or IS", showarrow = F, xref='paper', yref='paper'))
+  )
+export(MIIS, file = "./output/MIIS_base_risk_pred.png")
+
+VTE$width <- 500
+VTE$height <- 800
+VTE <- VTE   %>%
+  layout(
+    annotations = list(
+      list(x = 0.50 , y = 1.05, text = "VTE", showarrow = F, xref='paper', yref='paper'))
+  )
+export(VTE, file = "./output/VTE_base_risk_pred.png")
+
+
 

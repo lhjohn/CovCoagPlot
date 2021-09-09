@@ -49,6 +49,12 @@ get_eval_ext <- function(path, plpResult = FALSE){
   pred_65_150 <- prediction %>%
     dplyr::filter(ageYear >=65, ageYear <= 150)
   
+  pred_male <- prediction %>%
+    dplyr::filter(gender == 8507)
+  pred_female <- prediction %>%
+    dplyr::filter(gender == 8532)
+  
+  
   pred_0_64_eval <- PatientLevelPrediction::evaluatePlp(pred_0_64)
   auc_0_64 <- pred_0_64_eval$evaluationStatistics$AUC$auc
   auc_0_64_lb <- pred_0_64_eval$evaluationStatistics$AUC$auc_lb95ci
@@ -61,26 +67,64 @@ get_eval_ext <- function(path, plpResult = FALSE){
   auc_65_150_ub <- pred_65_150_eval$evaluationStatistics$AUC$auc_ub95ci
   eavg_65_150 <- pred_65_150_eval$evaluationStatistics$Emean
   
-  result <- data.frame(auc=auc_test, auc_lb=auc_test_lb, auc_ub=auc_test_ub,
-                       auc_0_64=auc_0_64, auc_0_64_lb=auc_0_64_lb, auc_0_64_ub=auc_0_64_ub,
-                       auc_65_150=auc_65_150, auc_65_150_lb=auc_65_150_lb, auc_65_150_ub=auc_65_150_ub,
-                       eavg=eavg_test, eavg_0_64=eavg_0_64, eavg_65_150=eavg_65_150)
+  pred_male_eval <- PatientLevelPrediction::evaluatePlp(pred_male)
+  auc_male <- pred_male_eval$evaluationStatistics$AUC$auc
+  auc_male_lb <- pred_male_eval$evaluationStatistics$AUC$auc_lb95ci
+  auc_male_ub <- pred_male_eval$evaluationStatistics$AUC$auc_ub95ci
+  eavg_male <- pred_male_eval$evaluationStatistics$Emean
+  
+  pred_female_eval <- PatientLevelPrediction::evaluatePlp(pred_female)
+  auc_female <- pred_female_eval$evaluationStatistics$AUC$auc
+  auc_female_lb <- pred_female_eval$evaluationStatistics$AUC$auc_lb95ci
+  auc_female_ub <- pred_female_eval$evaluationStatistics$AUC$auc_ub95ci
+  eavg_female <- pred_female_eval$evaluationStatistics$Emean
+  
+  result <- data.frame(auc=auc_test,
+                       auc_lb=auc_test_lb,
+                       auc_ub=auc_test_ub,
+                       auc_0_64=auc_0_64,
+                       auc_0_64_lb=auc_0_64_lb,
+                       auc_0_64_ub=auc_0_64_ub,
+                       auc_65_150=auc_65_150,
+                       auc_65_150_lb=auc_65_150_lb,
+                       auc_65_150_ub=auc_65_150_ub,
+                       auc_male=auc_male,
+                       auc_male_lb=auc_male_lb,
+                       auc_male_ub=auc_male_ub,
+                       auc_female=auc_female,
+                       auc_female_lb=auc_female_lb,
+                       auc_female_ub=auc_female_ub,
+                       eavg=eavg_test,
+                       eavg_0_64=eavg_0_64,
+                       eavg_65_150=eavg_65_150,
+                       eavg_male=eavg_male,
+                       eavg_female=eavg_female)
   
   return(result)
 }
 
-base_eval <- data.frame(auc=numeric(0),
-                        auc_lb=numeric(0),
-                        auc_ub=numeric(0),
-                        auc_0_64=numeric(0),
-                        auc_0_64_lb=numeric(0),
-                        auc_0_64_ub=numeric(0),
-                        auc_65_150=numeric(0),
-                        auc_65_150_lb=numeric(0),
-                        auc_65_150_ub=numeric(0),
-                        eavg=numeric(0),
-                        eavg_0_64=numeric(0),
-                        eavg_65_150=numeric(0))
+base_eval <- data.frame(
+  auc=numeric(0),
+  auc_lb=numeric(0),
+  auc_ub=numeric(0),
+  auc_0_64=numeric(0),
+  auc_0_64_lb=numeric(0),
+  auc_0_64_ub=numeric(0),
+  auc_65_150=numeric(0),
+  auc_65_150_lb=numeric(0),
+  auc_65_150_ub=numeric(0),
+  auc_male=numeric(0),
+  auc_male_lb=numeric(0),
+  auc_male_ub=numeric(0),
+  auc_female=numeric(0),
+  auc_female_lb=numeric(0),
+  auc_female_ub=numeric(0),
+  eavg=numeric(0),
+  eavg_0_64=numeric(0),
+  eavg_65_150=numeric(0),
+  eavg_male=numeric(0),
+  eavg_female=numeric(0))
+
 ema_eval <- data.frame(auc=numeric(0),
                        auc_lb=numeric(0),
                        auc_ub=numeric(0),
@@ -90,9 +134,17 @@ ema_eval <- data.frame(auc=numeric(0),
                        auc_65_150=numeric(0),
                        auc_65_150_lb=numeric(0),
                        auc_65_150_ub=numeric(0),
+                       auc_male=numeric(0),
+                       auc_male_lb=numeric(0),
+                       auc_male_ub=numeric(0),
+                       auc_female=numeric(0),
+                       auc_female_lb=numeric(0),
+                       auc_female_ub=numeric(0),
                        eavg=numeric(0),
                        eavg_0_64=numeric(0),
-                       eavg_65_150=numeric(0))
+                       eavg_65_150=numeric(0),
+                       eavg_male=numeric(0),
+                       eavg_female=numeric(0))
 # base_eavg <- data.frame(eavg=numeric(0),
 #                         eavg_0_64=numeric(0),
 #                         eavg_65_150=numeric(0))
@@ -101,21 +153,21 @@ for (i in 1:24) {
   # in case only every nth analysis needs to be loaded, not relevant anymore
   # therefore set to 1 == 0
   if(i %% 1 == 0) {
-    # path_base <- paste0("~/Data/Coagulopathy/IPCI/ValidationBase/IPCI/Analysis_", i, "/validationResult.rds")
-    path_base <- paste0("~/Data/Coagulopathy/SIDIAP/ValidationBase/Analysis_", i, "/validationResult.rds")
+    path_base <- paste0("~/Data/Coagulopathy/IPCI/ValidationBase/IPCI/Analysis_", i, "/validationResult.rds")
+    # path_base <- paste0("~/Data/Coagulopathy/SIDIAP/ValidationBase/Analysis_", i, "/validationResult.rds")
     
-    auc_row <- data.frame(auc=0,
-                          auc_lb=0,
-                          auc_ub=0,
-                          auc_0_64=0,
-                          auc_0_64_lb=0,
-                          auc_0_64_ub=0,
-                          auc_65_150=0,
-                          auc_65_150_lb=0,
-                          auc_65_150_ub=0,
-                          eavg=0,
-                          eavg_0_64=0,
-                          eavg_65_150=0)
+    # auc_row <- data.frame(auc=0,
+    #                       auc_lb=0,
+    #                       auc_ub=0,
+    #                       auc_0_64=0,
+    #                       auc_0_64_lb=0,
+    #                       auc_0_64_ub=0,
+    #                       auc_65_150=0,
+    #                       auc_65_150_lb=0,
+    #                       auc_65_150_ub=0,
+    #                       eavg=0,
+    #                       eavg_0_64=0,
+    #                       eavg_65_150=0)
     tryCatch(
       {
         eval_row <- get_eval_ext(path_base)
@@ -132,8 +184,8 @@ for (i in 1:24) {
   # in case only every nth analysis needs to be loaded, not relevant anymore
   # therefore set to 1 == 0
   if(i %% 1 == 0) {
-    path_ema <- paste0("~/Data/Coagulopathy/SIDIAP/ValidationEma/Analysis_", i, "/validationResult.rds")
-    # path_ema <- paste0("~/Data/Coagulopathy/IPCI/ValidationEma/IPCI/Analysis_", i, "/validationResult.rds")
+    # path_ema <- paste0("~/Data/Coagulopathy/SIDIAP/ValidationEma/Analysis_", i, "/validationResult.rds")
+    path_ema <- paste0("~/Data/Coagulopathy/IPCI/ValidationEma/IPCI/Analysis_", i, "/validationResult.rds")
     
     auc_row <- data.frame(auc=0,
                           auc_lb=0,
@@ -168,27 +220,38 @@ ema_eval_mat_true <- ema_eval
 base_eval_mat$auc[base_eval_mat$auc == 0] <- NA
 base_eval_mat$auc_0_64[base_eval_mat$auc_0_64 == 0] <- NA
 base_eval_mat$auc_65_150[base_eval_mat$auc_65_150 == 0] <- NA
+base_eval_mat$auc_male[base_eval_mat$auc_male == 0] <- NA
+base_eval_mat$auc_female[base_eval_mat$auc_female == 0] <- NA
 
 base_eval_mat$auc[base_eval_mat$auc < 0.5] <- 0.5
 base_eval_mat$auc_0_64[base_eval_mat$auc_0_64 < 0.5] <- 0.5
 base_eval_mat$auc_65_150[base_eval_mat$auc_65_150 < 0.5] <- 0.5
+base_eval_mat$auc_male[base_eval_mat$auc_male < 0.5] <- 0.5
+base_eval_mat$auc_female[base_eval_mat$auc_female < 0.5] <- 0.5
 
 ema_eval_mat$auc[ema_eval_mat$auc == 0] <- NA
 ema_eval_mat$auc_0_64[ema_eval_mat$auc_0_64 == 0] <- NA
 ema_eval_mat$auc_65_150[ema_eval_mat$auc_65_150 == 0] <- NA
+ema_eval_mat$auc_male[ema_eval_mat$auc_male == 0] <- NA
+ema_eval_mat$auc_female[ema_eval_mat$auc_female == 0] <- NA
 
 ema_eval_mat$auc[ema_eval_mat$auc < 0.5] <- 0.5
 ema_eval_mat$auc_0_64[ema_eval_mat$auc_0_64 < 0.5] <- 0.5
 ema_eval_mat$auc_65_150[ema_eval_mat$auc_65_150 < 0.5] <- 0.5
+ema_eval_mat$auc_male[ema_eval_mat$auc_male < 0.5] <- 0.5
+ema_eval_mat$auc_female[ema_eval_mat$auc_female < 0.5] <- 0.5
 
 base_eval_mat$eavg[base_eval_mat$eavg == 0] <- NA
 base_eval_mat$eavg_0_64[base_eval_mat$eavg_0_64 == 0] <- NA
 base_eval_mat$eavg_65_150[base_eval_mat$eavg_65_150 == 0] <- NA
+base_eval_mat$eavg_male[base_eval_mat$eavg_male == 0] <- NA
+base_eval_mat$eavg_female[base_eval_mat$eavg_female == 0] <- NA
 
 ema_eval_mat$eavg[ema_eval_mat$eavg == 0] <- NA
 ema_eval_mat$eavg_0_64[ema_eval_mat$eavg_0_64 == 0] <- NA
 ema_eval_mat$eavg_65_150[ema_eval_mat$eavg_65_150 == 0] <- NA
-
+ema_eval_mat$eavg_male[ema_eval_mat$eavg_male == 0] <- NA
+ema_eval_mat$eavg_female[ema_eval_mat$eavg_female == 0] <- NA
 
 ref_base <- read.csv("~/Data/Coagulopathy/CPRD Aurum/BaseOutput_25p/settings.csv")
 ref_base <- ref_base[order(ref_base$analysisId), ]
@@ -200,6 +263,7 @@ outcome_base <- paste0(outcome, " ", c(rep("30 days", 8),
                                        rep("90 days", 8)))
 
 outcome_base <- gsub("narrow ", "", as.character(outcome_base))
+outcome_base <- gsub("MI or IS", "ATE", as.character(outcome_base))
 
 # remove stroke and death outcome for EMA report
 # also remove ischemic stroke
@@ -248,7 +312,7 @@ full_data_ema_true <- data.frame(ema_eval_mat_true,
 #   dplyr::arrange(outcome_base)
 full_data_base <- full_data_base %>%
   dplyr::mutate(outcome_base =  factor(outcome_base, levels = c("MI 30 days",
-                                                                "MI or IS 30 days",
+                                                                "ATE 30 days",
                                                                 "PE 30 days",
                                                                 "DVT 30 days",
                                                                 "VTE 30 days"))) %>%
@@ -256,7 +320,7 @@ full_data_base <- full_data_base %>%
 
 full_data_ema<- full_data_ema %>%
   dplyr::mutate(outcome_base =  factor(outcome_base, levels = c("MI 30 days",
-                                                                "MI or IS 30 days",
+                                                                "ATE 30 days",
                                                                 "PE 30 days",
                                                                 "DVT 30 days",
                                                                 "VTE 30 days"))) %>%
@@ -265,7 +329,7 @@ full_data_ema<- full_data_ema %>%
 # trye
 full_data_base_true <- full_data_base_true %>%
   dplyr::mutate(outcome_base =  factor(outcome_base, levels = c("MI 30 days",
-                                                                "MI or IS 30 days",
+                                                                "ATE 30 days",
                                                                 "PE 30 days",
                                                                 "DVT 30 days",
                                                                 "VTE 30 days"))) %>%
@@ -273,7 +337,7 @@ full_data_base_true <- full_data_base_true %>%
 
 full_data_ema_true <- full_data_ema_true %>%
   dplyr::mutate(outcome_base =  factor(outcome_base, levels = c("MI 30 days",
-                                                                "MI or IS 30 days",
+                                                                "ATE 30 days",
                                                                 "PE 30 days",
                                                                 "DVT 30 days",
                                                                 "VTE 30 days"))) %>%
@@ -292,9 +356,17 @@ cellnotes_base_auc_0_64 <- paste0(format(round(full_data_base_true$auc_0_64, 2),
 cellnotes_base_auc_65_150 <- paste0(format(round(full_data_base_true$auc_65_150, 2), nsmall = 2),"\n (",
                                     format(round(full_data_base$auc_65_150_lb, 2), nsmall = 2), ", ",
                                     format(round(full_data_base$auc_65_150_ub, 2), nsmall = 2), ")")
+cellnotes_base_auc_male <- paste0(format(round(full_data_base$auc_male, 2), nsmall = 2),"\n (",
+                                  format(round(full_data_base$auc_male_lb, 2), nsmall = 2), ", ",
+                                  format(round(full_data_base$auc_male_ub, 2), nsmall = 2), ")")
+cellnotes_base_auc_female <- paste0(format(round(full_data_base$auc_female, 2), nsmall = 2),"\n (",
+                                    format(round(full_data_base$auc_female_lb, 2), nsmall = 2), ", ",
+                                    format(round(full_data_base$auc_female_ub, 2), nsmall = 2), ")")
 cellnotes_base <- data.frame(cellnotes_base_auc = cellnotes_base_auc,
                              cellnotes_base_auc_0_64 = cellnotes_base_auc_0_64,
-                             cellnotes_base_auc_65_150 = cellnotes_base_auc_65_150)
+                             cellnotes_base_auc_65_150 = cellnotes_base_auc_65_150,
+                             cellnotes_base_auc_male = cellnotes_base_auc_male,
+                             cellnotes_base_auc_female = cellnotes_base_auc_female)
 
 cellnotes_ema_auc <- paste0(format(round(full_data_ema_true$auc, 2), nsmall = 2),"\n (",
                             format(round(full_data_ema$auc_lb, 2), nsmall = 2), ", ",
@@ -305,16 +377,24 @@ cellnotes_ema_auc_0_64 <- paste0(format(round(full_data_ema_true$auc_0_64, 2), n
 cellnotes_ema_auc_65_150 <- paste0(format(round(full_data_ema_true$auc_65_150, 2), nsmall = 2),"\n (",
                                    format(round(full_data_ema$auc_65_150_lb, 2), nsmall = 2), ", ",
                                    format(round(full_data_ema$auc_65_150_ub, 2), nsmall = 2), ")")
+cellnotes_ema_auc_male <- paste0(format(round(full_data_ema$auc_male, 2), nsmall = 2),"\n (",
+                                 format(round(full_data_ema$auc_male_lb, 2), nsmall = 2), ", ",
+                                 format(round(full_data_ema$auc_male_ub, 2), nsmall = 2), ")")
+cellnotes_ema_auc_female <- paste0(format(round(full_data_ema$auc_female, 2), nsmall = 2),"\n (",
+                                   format(round(full_data_ema$auc_female_lb, 2), nsmall = 2), ", ",
+                                   format(round(full_data_ema$auc_female_ub, 2), nsmall = 2), ")")
 cellnotes_ema <- data.frame(cellnotes_ema_auc = cellnotes_ema_auc,
                             cellnotes_ema_auc_0_64 = cellnotes_ema_auc_0_64,
-                            cellnotes_ema_auc_65_150 = cellnotes_ema_auc_65_150)
+                            cellnotes_ema_auc_65_150 = cellnotes_ema_auc_65_150,
+                            cellnotes_ema_auc_male = cellnotes_ema_auc_male,
+                            cellnotes_ema_auc_female = cellnotes_ema_auc_female)
 
 axis_label_font_size <- 24
 tick_font_size <- 18
 cell_note_font_size <- 18
 
 auc_base_plot <- full_data_base %>%
-  dplyr::select(c(auc, auc_0_64, auc_65_150)) %>%
+  dplyr::select(c(auc, auc_0_64, auc_65_150, auc_male, auc_female)) %>%
   heatmaply::heatmaply(dendrogram = "none",
                        ylab = "Outcome",
                        xlab = "Target", 
@@ -339,7 +419,7 @@ auc_base_plot <- full_data_base %>%
                        label_names = c("Outcome", "Target", "AUROC"),
                        # fontsize_row = 8,
                        # fontsize_col = 8,
-                       labCol = c("All ages", "Age <65", "Age >=65"),
+                       labCol = c("All", "Age <65", "Age >=65", "Male", "Female"),
                        column_text_angle = 0,
                        grid_gap = 3,
                        labRow = full_data_base$outcome_base,
@@ -353,7 +433,7 @@ auc_base_plot <- full_data_base %>%
   )
 
 auc_ema_plot <- full_data_ema %>%
-  dplyr::select(c(auc, auc_0_64, auc_65_150)) %>%
+  dplyr::select(c(auc, auc_0_64, auc_65_150, auc_male, auc_female)) %>%
   heatmaply::heatmaply(dendrogram = "none",
                        ylab = "Outcome",
                        xlab = "Target", 
@@ -378,7 +458,7 @@ auc_ema_plot <- full_data_ema %>%
                        label_names = c("Outcome", "Target", "AUROC"),
                        # fontsize_row = 8,
                        # fontsize_col = 8,
-                       labCol = c("All ages", "Age <65", "Age >=65"),
+                       labCol = c("All", "Age <65", "Age >=65", "Male", "Female"),
                        column_text_angle = 0,
                        grid_gap = 3,
                        labRow = full_data_ema$outcome_base,
@@ -397,7 +477,7 @@ auc_ema_plot <- full_data_ema %>%
   )
 
 eavg_base_plot <- full_data_base %>%
-  dplyr::select(c(eavg, eavg_0_64, eavg_65_150)) %>%
+  dplyr::select(c(eavg, eavg_0_64, eavg_65_150, eavg_male, eavg_female)) %>%
   heatmaply::heatmaply(dendrogram = "none",
                        ylab = "Outcome",
                        xlab = "Target", 
@@ -423,7 +503,7 @@ eavg_base_plot <- full_data_base %>%
                        label_names = c("Outcome", "Target", "AUROC"),
                        # fontsize_row = 8,
                        # fontsize_col = 8,
-                       labCol = c("All ages", "Age <65", "Age >=65"),
+                       labCol = c("All", "Age <65", "Age >=65", "Male", "Female"),
                        column_text_angle = 0,
                        grid_gap = 3,
                        labRow = full_data_base$outcome_base,
@@ -439,7 +519,7 @@ eavg_base_plot <- full_data_base %>%
   )
 
 eavg_ema_plot <- full_data_ema %>%
-  dplyr::select(c(eavg, eavg_0_64, eavg_65_150)) %>%
+  dplyr::select(c(eavg, eavg_0_64, eavg_65_150, eavg_male, eavg_female)) %>%
   heatmaply::heatmaply(dendrogram = "none",
                        ylab = "Outcome",
                        xlab = "Target", 
@@ -465,7 +545,7 @@ eavg_ema_plot <- full_data_ema %>%
                        label_names = c("Outcome", "Target", "AUROC"),
                        # fontsize_row = 8,
                        # fontsize_col = 8,
-                       labCol = c("All ages", "Age <65", "Age >=65"),
+                       labCol = c("All", "Age <65", "Age >=65", "Male", "Female"),
                        column_text_angle = 0,
                        grid_gap = 3,
                        labRow = full_data_ema$outcome_base,
@@ -488,38 +568,49 @@ eavg_ema_plot <- full_data_ema %>%
 # auc_pars_plot$width <- 900
 # auc_pars_plot$height <- 500
 
-auc_plots<- subplot(auc_base_plot, auc_ema_plot, margin = .1, titleX = TRUE, titleY = TRUE)
+auc_plots<- subplot(auc_base_plot, auc_ema_plot, margin = .025, titleX = TRUE, titleY = TRUE)
 auc_plots <- auc_plots %>%
   layout(
     annotations = list(
-      list(x = 0.11 , y = 1.094, text = "Baseline models", showarrow = F, xref='paper', yref='paper'),
-      list(x = 0.92 , y = 1.094, text = "Parsimonious models", showarrow = F, xref='paper', yref='paper'))
+      list(x = 0.16 , y = 1.094, text = "Baseline models", showarrow = F, xref='paper', yref='paper'),
+      list(x = 0.86 , y = 1.094, text = "Parsimonious models", showarrow = F, xref='paper', yref='paper')),
+    margin = list(
+      l = 200,
+      r = 0,
+      b = 75,
+      t = 150,
+      pad = 0
+    )
   )
 
-auc_plots$width <-  1400
-auc_plots$height <- 420
-print(auc_plots)
+# auc_plots$width <-  1400
+# auc_plots$height <- 420
+# print(auc_plots)
 
 # r$colorbar_len <- 0.9
 # print(auc_plots)
 
-eavg_plots<- subplot(eavg_base_plot, eavg_ema_plot, margin = .075, titleX = TRUE, titleY = TRUE)
+eavg_plots<- subplot(eavg_base_plot, eavg_ema_plot, margin = .025, titleX = TRUE, titleY = TRUE)
 eavg_plots <- eavg_plots %>%
   layout(
     annotations = list(
-      list(x = 0.11 , y = 1.094, text = "Baseline models", showarrow = F, xref='paper', yref='paper'),
-      list(x = 0.92 , y = 1.094, text = "Parsimonious models", showarrow = F, xref='paper', yref='paper'))
+      list(x = 0.16 , y = 1.094, text = "Baseline models", showarrow = F, xref='paper', yref='paper'),
+      list(x = 0.86 , y = 1.094, text = "Parsimonious models", showarrow = F, xref='paper', yref='paper')),
+    margin = list(
+      l = 200,
+      r = 0,
+      b = 75,
+      t = 150,
+      pad = 0
+    )
   )
 
-eavg_plots$width <-  1400
-eavg_plots$height <- 420
-# r$colorbar_len <- 0.9
-print(eavg_plots)
+# eavg_plots$width <-  1400
+# eavg_plots$height <- 420
+# # r$colorbar_len <- 0.9
+# print(eavg_plots)
 # 
-export(auc_plots, file = "./output/cprd_models_on_sidiap_auc_.png")
-export(eavg_plots, file = "./output/cprd_models_on_sidiap_eavg_.png")
-
-# orca(auc_plots, file = "./output/cprd_models_auc.png", scale = 1)
-
-# export(q, file = "base25_models_eavg.png")
-
+# orca(auc_plots, file = "./output/cprd_models_on_sidiap_auc_.png", width = 1800, height = 530)
+# orca(eavg_plots, file = "./output/cprd_models_on_sidiap_eavg_.png", width = 1800, height = 530)
+orca(auc_plots, file = "./output/cprd_models_on_ipci_auc_.png", width = 1800, height = 530)
+orca(eavg_plots, file = "./output/cprd_models_on_ipci_eavg_.png", width = 1800, height = 530)
